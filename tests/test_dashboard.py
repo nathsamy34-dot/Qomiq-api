@@ -1,6 +1,8 @@
 """
 Tests d'intégration — /dashboard/summary et /dashboard/kpis.
 """
+from datetime import date, timedelta
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -61,9 +63,11 @@ class TestDashboardSummary:
         self, client: TestClient, auth_headers: dict, user_id: int
     ) -> None:
         """CA renseigné → current_month > 0."""
+        ref = date.today()
+        prev = (ref.replace(day=1) - timedelta(days=1))
         _inject(user_id, "ca_mensuel", [
-            {"mois": "2026-04", "ca_realise": 42000.0},
-            {"mois": "2026-03", "ca_realise": 35000.0},
+            {"mois": f"{ref.year:04d}-{ref.month:02d}", "ca_realise": 42000.0},
+            {"mois": f"{prev.year:04d}-{prev.month:02d}", "ca_realise": 35000.0},
         ])
         resp = client.get("/dashboard/summary", headers=auth_headers)
         assert resp.status_code == 200
